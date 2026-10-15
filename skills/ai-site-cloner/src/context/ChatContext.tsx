@@ -1,32 +1,47 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { Conversation, Message, ModelOption, ThemeMode } from '@/types/chat';
+
+export const NINEROUTER_API_URL = 'https://9router-production-8466.up.railway.app/v1/chat/completions';
+export const NINEROUTER_API_KEY = 'sk-8f7041f3855b1b1a-wmv4fk-2ea26ec8';
 
 export const AVAILABLE_MODELS: ModelOption[] = [
   {
-    id: 'gpt-4o',
-    name: 'GPT-4o',
-    description: 'Our most intelligent and versatile model for text and vision',
-    badge: 'Popular',
+    id: 'ag/gemini-3.8-flash',
+    name: 'Gemini 3.8 Flash',
+    description: 'Next-gen frontier speed and intelligence via 9Router',
+    badge: 'Fast & Smart',
     isDefault: true,
   },
   {
-    id: 'gpt-4o-mini',
-    name: 'GPT-4o mini',
-    description: 'Faster and lightweight model for everyday tasks',
-    badge: 'Fast',
+    id: 'ag/gemini-3.8-flash-high',
+    name: 'Gemini 3.8 Flash High',
+    description: 'High-reasoning profile of Gemini 3.8',
+    badge: 'Pro',
   },
   {
-    id: 'o1',
-    name: 'o1',
-    description: 'Uses advanced reasoning for complex mathematics and code',
+    id: 'gpt-4o',
+    name: 'GPT-4o',
+    description: 'OpenAI multi-modal flagship intelligence',
+    badge: 'Omni',
+  },
+  {
+    id: 'ag/gemini-3.7-flash-high',
+    name: 'Gemini 3.7 Flash',
+    description: 'Hybrid reasoning and versatile developer assistant',
     badge: 'Reasoning',
   },
   {
-    id: 'o1-mini',
-    name: 'o1-mini',
-    description: 'Fast reasoning model tailored for coding and STEM',
+    id: 'ag/gemini-3.6-flash-high',
+    name: 'Gemini 3.6 Flash',
+    description: 'Proven reliable high-throughput assistant',
+    badge: 'Reliable',
+  },
+  {
+    id: 'ag/claude-sonnet-4-6',
+    name: 'Claude Sonnet 4.6',
+    description: 'Anthropic advanced coding and creative writing',
     badge: 'Coding',
   },
 ];
@@ -41,39 +56,40 @@ const INITIAL_CONVERSATIONS: Conversation[] = [
       {
         id: 'msg-1',
         role: 'user',
-        content: 'Explain how Next.js 15 Server Components and Client Components interact.',
+        content: 'Explain how Next.js Server Components and Client Components interact.',
         timestamp: '10:30 AM',
       },
       {
         id: 'msg-2',
         role: 'assistant',
-        content: `In Next.js App Router, **React Server Components (RSC)** are the default. They render exclusively on the server and send zero JavaScript to the browser.
+        content: `In Next.js App Router, **React Server Components (RSC)** are the default. They execute exclusively on the server and transmit zero runtime JavaScript to the client.
 
-### Key Principles:
+### Key Architectural Concepts:
 1. **Server Components:**
-   - Fetch data directly on the server without API waterfalls.
-   - Keep secrets, database keys, and large dependencies off the client bundle.
+   - Query databases and internal APIs directly without network round-trips.
+   - Keep secret API keys and heavyweight dependencies off client bundles.
 2. **Client Components (\`'use client'\`):**
-   - Provide client-side interactivity like \`useState\`, \`useEffect\`, event handlers, and browser APIs.
+   - Provide interactive event listeners (\`onClick\`, \`onChange\`), state hooks (\`useState\`, \`useReducer\`), and DOM APIs.
 
 \`\`\`typescript
-// Example: Server Component passing data to Client Component
-import ClientChart from './ClientChart';
-import { db } from '@/lib/db';
+// Example: Composing Server and Client Components
+import InteractiveChart from './InteractiveChart';
+import { fetchMetrics } from '@/lib/api';
 
 export default async function DashboardPage() {
-  const analyticsData = await db.analytics.findMany();
+  const metrics = await fetchMetrics(); // Executed on server
+
   return (
-    <div className="p-6">
-      <h1 className="text-xl font-bold">Metrics Overview</h1>
-      <ClientChart initialData={analyticsData} />
-    </div>
+    <main className="p-6">
+      <h1 className="text-2xl font-bold tracking-tight">Performance Overview</h1>
+      <InteractiveChart data={metrics} />
+    </main>
   );
 }
 \`\`\`
-Both paradigms work harmoniously to keep client bundles ultra-slim while delivering lightning-fast interactive experiences.`,
+
+This pattern ensures fast first-contentful paint while preserving dynamic client capabilities.`,
         timestamp: '10:31 AM',
-        model: 'GPT-4o',
       },
     ],
   },
@@ -92,28 +108,27 @@ Both paradigms work harmoniously to keep client bundles ultra-slim while deliver
       {
         id: 'msg-4',
         role: 'assistant',
-        content: `Tailwind CSS v4 introduces a **CSS-first configuration** paradigm!
+        content: `Tailwind CSS v4 adopts a **pure CSS-first configuration** model.
 
-Instead of a standalone \`tailwind.config.js\` file, configuration lives directly in your stylesheet using \`@theme\` directives:
+Rather than managing a JavaScript \`tailwind.config.js\` file, configuration is defined using native CSS \`@theme\` directives:
 
 \`\`\`css
 @import "tailwindcss";
 
 @theme {
-  --color-brand-primary: #10a37f;
-  --font-display: "Söhne", sans-serif;
+  --color-primary: #10a37f;
+  --font-sans: "Söhne", ui-sans-serif, system-ui;
 }
 \`\`\`
 
-This delivers up to 10x faster builds and seamless CSS variable mapping.`,
+This delivers up to 10x faster compile times and full interop with native CSS custom properties.`,
         timestamp: 'Yesterday 3:16 PM',
-        model: 'GPT-4o',
       },
     ],
   },
   {
     id: 'conv-3',
-    title: 'Python Fast API Microservice',
+    title: 'Python FastAPI Microservice',
     group: 'Previous 7 Days',
     updatedAt: new Date(Date.now() - 86400000 * 3).toISOString(),
     messages: [
@@ -126,13 +141,13 @@ This delivers up to 10x faster builds and seamless CSS variable mapping.`,
       {
         id: 'msg-6',
         role: 'assistant',
-        content: `Here is a production-ready asynchronous FastAPI endpoint with Pydantic validation:
+        content: `Here is a clean asynchronous FastAPI endpoint with Pydantic v2 data validation:
 
 \`\`\`python
 from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel, Field
 
-app = FastAPI(title="AI Service API")
+app = FastAPI(title="AI Inference Service")
 
 class QueryRequest(BaseModel):
     prompt: str = Field(..., min_length=1, max_length=4000)
@@ -140,20 +155,19 @@ class QueryRequest(BaseModel):
 
 class QueryResponse(BaseModel):
     status: str
-    tokens_used: int
-    result: str
+    tokens_processed: int
+    content: str
 
 @app.post("/v1/chat", response_model=QueryResponse, status_code=status.HTTP_200_OK)
-async def process_chat(payload: QueryRequest):
-    # Asynchronous logic processing
+async def handle_chat_completion(payload: QueryRequest):
+    # Simulated async processing
     return QueryResponse(
         status="success",
-        tokens_used=128,
-        result=f"Processed prompt: {payload.prompt[:30]}..."
+        tokens_processed=len(payload.prompt.split()),
+        content=f"Received: {payload.prompt}"
     )
 \`\`\``,
         timestamp: '3 days ago',
-        model: 'GPT-4o',
       },
     ],
   },
@@ -165,8 +179,6 @@ interface ChatContextType {
   activeConversation: Conversation | null;
   selectedModel: string;
   setSelectedModel: (model: string) => void;
-  activeTab: 'Chat' | 'Work';
-  setActiveTab: (tab: 'Chat' | 'Work') => void;
   theme: ThemeMode;
   setTheme: (theme: ThemeMode) => void;
   isSidebarOpen: boolean;
@@ -195,13 +207,13 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
 export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [conversations, setConversations] = useState<Conversation[]>(INITIAL_CONVERSATIONS);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
-  const [selectedModel, setSelectedModel] = useState<string>('gpt-4o');
-  const [activeTab, setActiveTab] = useState<'Chat' | 'Work'>('Chat');
+  const [selectedModel, setSelectedModel] = useState<string>('ag/gemini-3.8-flash');
   const [theme, setThemeState] = useState<ThemeMode>('dark');
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [isUpgradeOpen, setIsUpgradeOpen] = useState<boolean>(false);
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Apply theme class to HTML element
   const setTheme = (newTheme: ThemeMode) => {
@@ -222,7 +234,6 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    // Default to dark mode for authentic ChatGPT feel
     document.documentElement.classList.add('dark');
   }, []);
 
@@ -233,10 +244,18 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const activeConversation = conversations.find((c) => c.id === activeConversationId) || null;
 
   const createNewChat = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    setIsStreaming(false);
     setActiveConversationId(null);
   };
 
   const selectConversation = (id: string) => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    setIsStreaming(false);
     setActiveConversationId(id);
   };
 
@@ -253,63 +272,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
-  const generateAIResponse = (userPrompt: string, thinkActive: boolean) => {
-    const promptLower = userPrompt.toLowerCase();
-    let thought = thinkActive
-      ? 'Analyzing problem domain, evaluating optimal patterns, reviewing edge cases...'
-      : undefined;
-
-    if (promptLower.includes('code') || promptLower.includes('python') || promptLower.includes('function')) {
-      return {
-        thought,
-        content: `Here is the clean implementation tailored for your request:
-
-\`\`\`python
-def process_data(items: list[dict], threshold: float = 0.5) -> list[dict]:
-    """Filter and normalize incoming payload records."""
-    normalized = []
-    for item in items:
-        score = item.get("score", 0.0)
-        if score >= threshold:
-            normalized.append({
-                "id": item["id"],
-                "score": round(score, 4),
-                "verified": True
-            })
-    return normalized
-
-# Example usage
-data = [{"id": 1, "score": 0.82}, {"id": 2, "score": 0.35}]
-print(process_data(data))
-\`\`\`
-
-Let me know if you would like me to add tests or error handling!`,
-      };
-    }
-
-    if (promptLower.includes('image') || promptLower.includes('sticker') || promptLower.includes('dall-e')) {
-      return {
-        thought,
-        content: `I've prepared a prompt for image generation:
-
-> *"A futuristic minimalist workspace overlooking a neon-lit cyberpunk metropolis at dusk, cinematic volumetric lighting, 8k resolution, hyper-detailed render."*
-
-Would you like me to adjust the visual style or lighting palette?`,
-      };
-    }
-
-    return {
-      thought,
-      content: `I understand! Based on your question: **"${userPrompt}"**:
-
-Here are the key takeaways:
-1. **Core Concept:** Efficient structuring and clear separation of concerns provide high maintainability.
-2. **Next Steps:** You can refine this by specifying custom constraints, adding edge-case handling, or integrating external APIs.
-
-Feel free to ask follow-up questions or request code samples!`,
-    };
-  };
-
+  // Real AI Streaming via 9Router
   const sendMessage = async (content: string, thinkActive = false) => {
     if (!content.trim() || isStreaming) return;
 
@@ -321,11 +284,10 @@ Feel free to ask follow-up questions or request code samples!`,
     };
 
     let targetConvId = activeConversationId;
-    let updatedConversations = [...conversations];
+    let currentMessages: Message[] = [];
 
     if (!targetConvId) {
-      // Create new conversation
-      const newTitle = content.trim().length > 30 ? `${content.trim().slice(0, 30)}...` : content.trim();
+      const newTitle = content.trim().length > 32 ? `${content.trim().slice(0, 32)}...` : content.trim();
       targetConvId = `conv-${Date.now()}`;
       const newConv: Conversation = {
         id: targetConvId,
@@ -334,39 +296,36 @@ Feel free to ask follow-up questions or request code samples!`,
         updatedAt: new Date().toISOString(),
         messages: [userMessage],
       };
-      updatedConversations = [newConv, ...updatedConversations];
-      setConversations(updatedConversations);
+      setConversations((prev) => [newConv, ...prev]);
       setActiveConversationId(targetConvId);
+      currentMessages = [userMessage];
     } else {
-      updatedConversations = updatedConversations.map((c) =>
-        c.id === targetConvId
-          ? {
-              ...c,
-              messages: [...c.messages, userMessage],
-              updatedAt: new Date().toISOString(),
-            }
-          : c
+      const conv = conversations.find((c) => c.id === targetConvId);
+      currentMessages = conv ? [...conv.messages, userMessage] : [userMessage];
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === targetConvId
+            ? {
+                ...c,
+                messages: [...c.messages, userMessage],
+                updatedAt: new Date().toISOString(),
+              }
+            : c
+        )
       );
-      setConversations(updatedConversations);
     }
 
-    // AI Response Streaming
-    setIsStreaming(true);
-    const aiResponseData = generateAIResponse(content, thinkActive);
-    const fullText = aiResponseData.content;
+    // Set up placeholder for streaming response
     const aiMessageId = `ai-${Date.now()}`;
-
     const initialAiMessage: Message = {
       id: aiMessageId,
       role: 'assistant',
       content: '',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isStreaming: true,
-      thought: aiResponseData.thought,
-      model: AVAILABLE_MODELS.find((m) => m.id === selectedModel)?.name || 'GPT-4o',
+      thought: thinkActive ? 'Connecting to 9Router deep reasoning cluster...' : undefined,
     };
 
-    // Add empty placeholder for streaming
     setConversations((prev) =>
       prev.map((c) =>
         c.id === targetConvId
@@ -375,13 +334,107 @@ Feel free to ask follow-up questions or request code samples!`,
       )
     );
 
-    // Stream text in chunks
-    let currentIdx = 0;
-    const chunkSize = 3;
-    const interval = setInterval(() => {
-      currentIdx += chunkSize;
-      const currentChunk = fullText.slice(0, currentIdx);
+    setIsStreaming(true);
+    abortControllerRef.current = new AbortController();
 
+    // Prepare API history for 9Router
+    const apiMessages = currentMessages.map((m) => ({
+      role: m.role,
+      content: m.content,
+    }));
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: selectedModel,
+          messages: apiMessages,
+        }),
+        signal: abortControllerRef.current.signal,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`9Router Error (${response.status}): ${errorText || response.statusText}`);
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let accumulatedContent = '';
+
+      if (reader) {
+        let buffer = '';
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed || trimmed.startsWith(':')) continue;
+            if (trimmed === 'data: [DONE]') {
+              break;
+            }
+            if (trimmed.startsWith('data: ')) {
+              const dataStr = trimmed.slice(6);
+              try {
+                const parsed = JSON.parse(dataStr);
+                const token = parsed.choices?.[0]?.delta?.content || '';
+                if (token) {
+                  accumulatedContent += token;
+
+                  setConversations((prev) =>
+                    prev.map((c) =>
+                      c.id === targetConvId
+                        ? {
+                            ...c,
+                            messages: c.messages.map((m) =>
+                              m.id === aiMessageId
+                                ? { ...m, content: accumulatedContent, isStreaming: true }
+                                : m
+                            ),
+                          }
+                        : c
+                    )
+                  );
+                }
+              } catch {
+                // Ignore incomplete JSON chunks in SSE stream
+              }
+            }
+          }
+        }
+      }
+
+      // Mark streaming complete
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === targetConvId
+            ? {
+                ...c,
+                messages: c.messages.map((m) =>
+                  m.id === aiMessageId
+                    ? { ...m, isStreaming: false }
+                    : m
+                ),
+              }
+            : c
+        )
+      );
+    } catch (err: unknown) {
+      if ((err as Error)?.name === 'AbortError') {
+        console.log('Stream aborted');
+        return;
+      }
+      console.error('9Router Streaming Error:', err);
+      const errorMessage = (err as Error)?.message || 'An unexpected error occurred';
       setConversations((prev) =>
         prev.map((c) =>
           c.id === targetConvId
@@ -391,8 +444,8 @@ Feel free to ask follow-up questions or request code samples!`,
                   m.id === aiMessageId
                     ? {
                         ...m,
-                        content: currentChunk,
-                        isStreaming: currentIdx < fullText.length,
+                        content: `⚠️ **9Router Connection Error**: ${errorMessage}\n\nPlease verify that the selected model is supported and your network is accessible.`,
+                        isStreaming: false,
                       }
                     : m
                 ),
@@ -400,12 +453,10 @@ Feel free to ask follow-up questions or request code samples!`,
             : c
         )
       );
-
-      if (currentIdx >= fullText.length) {
-        clearInterval(interval);
-        setIsStreaming(false);
-      }
-    }, 20);
+    } finally {
+      setIsStreaming(false);
+      abortControllerRef.current = null;
+    }
   };
 
   const userProfile = {
@@ -423,8 +474,6 @@ Feel free to ask follow-up questions or request code samples!`,
         activeConversation,
         selectedModel,
         setSelectedModel,
-        activeTab,
-        setActiveTab,
         theme,
         setTheme,
         isSidebarOpen,

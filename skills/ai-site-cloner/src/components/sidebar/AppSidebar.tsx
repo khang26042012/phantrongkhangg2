@@ -1,19 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useChat } from '@/context/ChatContext';
 import ProfileMenu from './ProfileMenu';
 import {
   PanelLeftClose,
   Search,
   SquarePen,
-  Image,
-  Clock,
-  BookOpen,
-  Puzzle,
-  Heart,
-  Terminal,
-  Compass,
   FolderPlus,
   Trash2,
   Gift,
@@ -21,6 +14,7 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { TimeGroup } from '@/types/chat';
+import gsap from 'gsap';
 
 export default function AppSidebar() {
   const {
@@ -39,23 +33,34 @@ export default function AppSidebar() {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchVisible, setIsSearchVisible] = useState(false);
+  const sidebarRef = useRef<HTMLElement>(null);
 
-  // Group conversations
+  // GSAP animation on sidebar open/close
+  useEffect(() => {
+    if (sidebarRef.current) {
+      if (isSidebarOpen) {
+        gsap.to(sidebarRef.current, {
+          x: 0,
+          opacity: 1,
+          duration: 0.3,
+          ease: 'power3.out',
+        });
+      } else {
+        gsap.to(sidebarRef.current, {
+          x: -260,
+          opacity: 0.8,
+          duration: 0.25,
+          ease: 'power3.in',
+        });
+      }
+    }
+  }, [isSidebarOpen]);
+
   const groups: TimeGroup[] = ['Today', 'Yesterday', 'Previous 7 Days'];
 
   const filteredConversations = conversations.filter((c) =>
     c.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const navTools = [
-    { name: 'Images', icon: <Image className="w-4 h-4" /> },
-    { name: 'Tasks', icon: <Clock className="w-4 h-4" /> },
-    { name: 'Library', icon: <BookOpen className="w-4 h-4" /> },
-    { name: 'Plugins', icon: <Puzzle className="w-4 h-4" /> },
-    { name: 'Health', icon: <Heart className="w-4 h-4" /> },
-    { name: 'Codex', icon: <Terminal className="w-4 h-4" /> },
-    { name: 'Explore', icon: <Compass className="w-4 h-4" /> },
-  ];
 
   return (
     <>
@@ -69,30 +74,29 @@ export default function AppSidebar() {
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed md:static inset-y-0 left-0 z-40 w-64 bg-[#171717] dark:bg-[#171717] border-r border-[#2a2a2a] flex flex-col transition-all duration-200 select-none ${
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:-ml-64'
+        ref={sidebarRef}
+        className={`fixed md:static inset-y-0 left-0 z-40 w-64 bg-[#171717] border-r border-[#2a2a2a] flex flex-col select-none no-scrollbar ${
+          isSidebarOpen ? 'block' : 'hidden md:hidden'
         }`}
       >
         {/* Top Header */}
         <div className="h-14 px-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-white tracking-tight text-base pl-1">
-              ChatGPT
-            </span>
-          </div>
+          <span className="font-semibold text-white tracking-tight text-base pl-1">
+            ChatGPT
+          </span>
 
           <div className="flex items-center gap-1">
             <button
               onClick={() => setIsSearchVisible(!isSearchVisible)}
               title="Search chats"
-              className="p-2 rounded-lg hover:bg-[#252525] text-[#b4b4b4] hover:text-white transition-colors cursor-pointer"
+              className="p-1.5 rounded-lg hover:bg-[#252525] text-[#b4b4b4] hover:text-white transition-colors cursor-pointer"
             >
               <Search className="w-4 h-4" />
             </button>
             <button
               onClick={toggleSidebar}
               title="Hide sidebar"
-              className="p-2 rounded-lg hover:bg-[#252525] text-[#b4b4b4] hover:text-white transition-colors cursor-pointer"
+              className="p-1.5 rounded-lg hover:bg-[#252525] text-[#b4b4b4] hover:text-white transition-colors cursor-pointer"
             >
               <PanelLeftClose className="w-4 h-4" />
             </button>
@@ -113,7 +117,7 @@ export default function AppSidebar() {
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-2 top-2 text-[#8e8e8e] hover:text-white"
+                  className="absolute right-2 top-2 text-[#8e8e8e] hover:text-white cursor-pointer"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -122,40 +126,26 @@ export default function AppSidebar() {
           </div>
         )}
 
-        {/* Navigation & Tools List */}
-        <div className="px-2 space-y-0.5">
-          {/* New Chat Primary Button */}
+        {/* Primary New Chat Button */}
+        <div className="px-3 pb-2">
           <button
             onClick={() => {
               createNewChat();
               if (window.innerWidth < 768) setIsSidebarOpen(false);
             }}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl bg-[#212121] hover:bg-[#2a2a2a] text-[#ececec] text-xs font-medium transition-colors cursor-pointer border border-[#2f2f2f] mb-2"
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl bg-[#212121] hover:bg-[#2a2a2a] text-[#ececec] text-xs font-semibold transition-colors cursor-pointer border border-[#2f2f2f] shadow-xs"
           >
             <SquarePen className="w-4 h-4 text-[#10a37f]" />
             <span>New chat</span>
           </button>
-
-          {/* Quick tool items */}
-          <div className="space-y-0.5 max-h-36 overflow-y-auto pr-1">
-            {navTools.map((tool) => (
-              <button
-                key={tool.name}
-                className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-xl hover:bg-[#212121] text-[#b4b4b4] hover:text-white text-xs font-medium transition-colors cursor-pointer"
-              >
-                {tool.icon}
-                <span>{tool.name}</span>
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Divider */}
-        <div className="h-px bg-[#262626] mx-3 my-2" />
+        <div className="h-px bg-[#262626] mx-3 my-1" />
 
-        {/* History List Area */}
-        <div className="flex-1 overflow-y-auto px-2 space-y-4">
-          {/* Projects Header */}
+        {/* Clean History List Area without extra tabs */}
+        <div className="flex-1 overflow-y-auto px-2 space-y-4 no-scrollbar">
+          {/* Projects Section */}
           <div>
             <div className="flex items-center justify-between px-3 py-1 text-[11px] font-semibold text-[#8e8e8e] uppercase tracking-wider">
               <span>Projects</span>
@@ -166,17 +156,17 @@ export default function AppSidebar() {
                 <FolderPlus className="w-3.5 h-3.5" />
               </button>
             </div>
-            <div className="px-3 py-1 text-xs text-[#666666]">No projects</div>
+            <div className="px-3 py-1 text-xs text-[#555555]">No projects</div>
           </div>
 
-          {/* Recents Header & Groups */}
+          {/* Recents Section */}
           <div>
             <div className="px-3 py-1 text-[11px] font-semibold text-[#8e8e8e] uppercase tracking-wider">
               Recents
             </div>
 
             {filteredConversations.length === 0 ? (
-              <div className="px-3 py-2 text-xs text-[#666666]">No chats found</div>
+              <div className="px-3 py-2 text-xs text-[#555555]">No chats found</div>
             ) : (
               groups.map((group) => {
                 const groupConvs = filteredConversations.filter((c) => c.group === group);
