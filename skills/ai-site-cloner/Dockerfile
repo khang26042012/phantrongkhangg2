@@ -21,8 +21,7 @@ COPY package.json package-lock.json ./
 
 # Frozen lockfile for reproducible builds; skip Playwright's browser download —
 # the production image never runs a browser
-RUN --mount=type=cache,target=/root/.npm \
-  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci --no-audit --no-fund
+RUN PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci --no-audit --no-fund
 
 # ============================================
 # Stage 2: Build the Next.js app (standalone output)
