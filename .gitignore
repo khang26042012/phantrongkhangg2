@@ -1,0 +1,6 @@
+node_modules/
+skills/ai-site-cloner/node_modules/
+.next/
+skills/ai-site-cloner/.next/
+*.log
+.env*.local
